@@ -1,24 +1,24 @@
 import coffee.Cappuccino;
+import coffee.Coffee;
 import coffee.Espresso;
 import coffee.Latte;
 
 import java.util.Scanner;
 
 public class CoffeeMachine {
-    private static Scanner scanner = new Scanner(System.in);
+
+    private static final Scanner scanner = new Scanner(System.in);
     private static int water = 400;
     private static int milk = 540;
     private static int coffeeBeans = 120;
     private static int disposableCups = 9;
     private static int money = 550;
+    private static final Espresso espresso = new Espresso();
+    private static final Latte latte = new Latte();
+    private static final Cappuccino cappuccino = new Cappuccino();
 
     public static void main(String[] args) {
-        getNumberIngredients();
-        System.out.println();
         chooseAction();
-        System.out.println();
-        getNumberIngredients();
-
     }
 
     private static void getNumberIngredients() {
@@ -60,61 +60,102 @@ public class CoffeeMachine {
 //    }
 
     private static void chooseAction() {
-        System.out.println("Write action (buy, fill, take):");
-        String action = scanner.nextLine();
+        while (true) {
+            System.out.println("Write action (buy, fill, take, remaining, exit):");
+            String[] line = scanner.nextLine().split(";");
 
-        if (action.equals("buy")) {
-            System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino:");
-            int chose = scanner.nextInt();
-            getCoffee(chose);
-        } else if (action.equals("fill")) {
-            fillMachine();
-        } else if (action.equals("take")) {
-            System.out.println("I gave you $" + money);
-            CoffeeMachine.money = 0;
+            for (String action : line) {
+                System.out.println();
+                switch (action.trim()) {
+                    case "buy":
+                        System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu");
+                        String chose = scanner.nextLine();
+                        if (chose.equals("back\n")) {
+                            continue;
+                        } else {
+                            getCoffee(Integer.parseInt(chose));
+                        }
+                        break;
+                    case "fill":
+                        fillMachine();
+                        break;
+                    case "take":
+                        System.out.println("I gave you $" + money);
+                        CoffeeMachine.money = 0;
+                        break;
+                    case "remaining":
+                        getNumberIngredients();
+                        break;
+                    case "exit":
+                        scanner.close();
+                        return;
+                }
+            }
+            System.out.println();
         }
-        scanner.close();
     }
 
     private static void getCoffee(int chose) {
         if (chose == 1) {
-            Espresso espresso = new Espresso();
-            water = water - espresso.getWater();
-            coffeeBeans = coffeeBeans - espresso.getCoffeeBeans();
-            money = money + espresso.getCost();
-            disposableCups = disposableCups - 1;
+            if (checkEnoughIng(espresso)) {
+                water = water - espresso.getWater();
+                coffeeBeans = coffeeBeans - espresso.getCoffeeBeans();
+                money = money + espresso.getCost();
+                disposableCups = disposableCups - 1;
+            }
         }
         if (chose == 2) {
-            Latte latte = new Latte();
-            water = water - latte.getWater();
-            milk = milk - latte.getMilk();
-            coffeeBeans = coffeeBeans - latte.getCoffeeBeans();
-            money = money + latte.getCost();
-            disposableCups = disposableCups - 1;
+            if (checkEnoughIng(latte)) {
+                water = water - latte.getWater();
+                milk = milk - latte.getMilk();
+                coffeeBeans = coffeeBeans - latte.getCoffeeBeans();
+                money = money + latte.getCost();
+                disposableCups = disposableCups - 1;
+            }
         }
         if (chose == 3) {
-            Cappuccino cappuccino = new Cappuccino();
-            water = water - cappuccino.getWater();
-            milk = milk - cappuccino.getMilk();
-            coffeeBeans = coffeeBeans - cappuccino.getCoffeeBeans();
-            money = money + cappuccino.getCost();
-            disposableCups = disposableCups - 1;
+            if (checkEnoughIng(cappuccino)) {
+                water = water - cappuccino.getWater();
+                milk = milk - cappuccino.getMilk();
+                coffeeBeans = coffeeBeans - cappuccino.getCoffeeBeans();
+                money = money + cappuccino.getCost();
+                disposableCups = disposableCups - 1;
+            }
         }
     }
-    
+
     private static void fillMachine() {
         System.out.println("Write how many ml of water do you want to add:");
-        int water = scanner.nextInt();
-        CoffeeMachine.water = CoffeeMachine.water + water;
+        String water = scanner.nextLine();
+        CoffeeMachine.water = CoffeeMachine.water + Integer.parseInt(water);
         System.out.println("Write how many ml of milk do you want to add: ");
-        int milk = scanner.nextInt();
-        CoffeeMachine.milk = CoffeeMachine.milk + milk;
+        String milk = scanner.nextLine();
+        CoffeeMachine.milk = CoffeeMachine.milk + Integer.parseInt(milk);
         System.out.println("Write how many grams of coffee beans do you want to add: ");
-        int coffee = scanner.nextInt();
-        CoffeeMachine.coffeeBeans = CoffeeMachine.coffeeBeans + coffee;
+        String coffee = scanner.nextLine();
+        CoffeeMachine.coffeeBeans = CoffeeMachine.coffeeBeans + Integer.parseInt(coffee);
         System.out.println("Write how many disposable cups of coffee do you want to add: ");
-        int cup = scanner.nextInt();
-        CoffeeMachine.disposableCups = CoffeeMachine.disposableCups + cup;
+        String cup = scanner.nextLine();
+        CoffeeMachine.disposableCups = CoffeeMachine.disposableCups + Integer.parseInt(cup);
+        System.out.println();
+    }
+
+    private static boolean checkEnoughIng(Coffee coffee) {
+        if (water < coffee.getWater()) {
+            System.out.println("Sorry, not enough water!");
+            return false;
+        } else if (milk < coffee.getMilk()) {
+            System.out.println("Sorry, not enough milk!");
+            return false;
+        } else if (coffeeBeans < coffee.getCoffeeBeans()) {
+            System.out.println("Sorry, not enough coffee beans");
+            return false;
+        } else if (disposableCups < 1) {
+            System.out.println("Sorry, not enough disposable cups");
+            return false;
+        }
+        System.out.println("I have enough resources, making you a coffee!");
+        return true;
     }
 }
 
